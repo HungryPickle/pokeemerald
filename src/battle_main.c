@@ -1968,13 +1968,14 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
 
             fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
 
-            for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
-                nameHash += gTrainers[trainerNum].trainerName[j];
-
-// MON_MALE and NATURE_HARDY share the default values. If one is set, assume the other is also meant to be set.
-// Enforced male pokemon cannot be Hardy. All pokemon with set natures will be male unless otherwise stated.
-            if ((partyData[i].nature > 0) || (partyData[i].gender > 0))
-                CreateMonWithGenderNatureLetter(&party[i], partyData[i].species, partyData[i].lvl, fixedIV, partyData[i].gender, partyData[i].nature, 0, partyData[i].shiny ? OT_ID_SHINY : OT_ID_RANDOM_NO_SHINY);
+// Due to the following variables all being derived from personality, all of them must be set at once to persist.
+// Default values: 1st ability, Hardy nature, Male gender, Not shiny.
+            if ((partyData[i].ability > 0) || (partyData[i].nature > 0) || (partyData[i].gender > 0) || (partyData[i].shiny == TRUE))
+            {
+                ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;  
+                personalityValue = CreateCustomPersonality(ability, partyData[i].nature, partyData[i].gender, partyData[i].shiny);
+                CreateMon(&party[i], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, 0, 0);
+            }
             else
             {
                 if (gTrainers[trainerNum].doubleBattle == TRUE)
@@ -1984,7 +1985,13 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
                 else
                     personalityValue = 0x88;
 
-                CreateMon(&party[i], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, partyData[i].shiny ? OT_ID_SHINY : OT_ID_RANDOM_NO_SHINY, 0);
+                for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
+                    nameHash += gTrainers[trainerNum].trainerName[j];          
+                for (j = 0; gSpeciesNames[partyData[i].species][j] != EOS; j++)
+                    nameHash += gSpeciesNames[partyData[i].species][j];
+
+                personalityValue += nameHash << 8;
+                CreateMon(&party[i], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
             }
 
             if (partyData[i].friendship == FRIENDSHIP_FRUSTRATION)
@@ -1998,17 +2005,8 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
             if (partyData[i].nickname[0] != '\0')
                 SetMonData(&party[i], MON_DATA_NICKNAME, &partyData[i].nickname);
 
-// Should take only constants of ABILITY_SLOT_1, ABILITY_SLOT_2, or ABILITY_HIDDEN.
-// If desired, implement else where undefined abilities are chosen between slots 1 and 2, a la gen IV.
-            if (partyData[i].ability > 0)
-            {
-                ability = partyData[i].ability;
-
-                if (partyData[i].ability == ABILITY_SLOT_1)
-                    ability = 0;
-
-                SetMonData(&party[i], MON_DATA_ABILITY_NUM, &ability);
-            }
+            if (partyData[i].ability == ABILITY_HIDDEN)
+                SetMonData(&party[i], MON_DATA_ABILITY_NUM, &partyData[i].ability);
 
 // Check if ball was defined for that pokemon.
             if (partyData[i].ball > 0)

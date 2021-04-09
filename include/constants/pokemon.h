@@ -71,6 +71,8 @@
 #define NATURE_QUIRKY   24
 #define NUM_NATURES     25
 
+#define NATURE_HARDY_TRAINERMON 255
+
 // Pokemon Stats
 #define STAT_HP      0
 #define STAT_ATK     1
@@ -274,7 +276,6 @@
 #define OT_ID_PLAYER_ID       0
 #define OT_ID_PRESET          1
 #define OT_ID_RANDOM_NO_SHINY 2
-#define OT_ID_SHINY           3
 
 #define MON_GIVEN_TO_PARTY      0
 #define MON_GIVEN_TO_PC         1
@@ -296,6 +297,8 @@
 #define MON_MALE       0x00
 #define MON_FEMALE     0xFE
 #define MON_GENDERLESS 0xFF
+
+#define MON_MALE_TRAINERMON 0xFD
 
 // Constants for AdjustFriendship
 #define FRIENDSHIP_EVENT_GROW_LEVEL       0
