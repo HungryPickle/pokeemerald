@@ -7028,6 +7028,7 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
     u32 personality;
     u8 startingNature;
     u8 distance;
+    u8 natureValueOfHighBit = (1 << 16) % NUM_NATURES;
 
     if(gender == MON_MALE_TRAINERMON)
         gender = MON_MALE;
@@ -7057,10 +7058,10 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
 
     while (personality % NUM_NATURES != nature || (personality & 1) != abilityIndex) // Loops 0 to 3 times. 
     { 
-        if(distance % ((1 << 16) % NUM_NATURES) < SHINY_ODDS) // It just works. ¯\_(ツ)_/¯
+        if(distance % natureValueOfHighBit < SHINY_ODDS)
         {
-            low16Bits += distance % 11;
-            high16Bits += distance / 11;
+            low16Bits += distance % natureValueOfHighBit;
+            high16Bits += distance / natureValueOfHighBit;
     
             personality = (high16Bits << 16) + low16Bits;
 
