@@ -7029,11 +7029,6 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
     u8 startingNature;
     u8 distance;
     u8 natureValueOfHighBit = (1 << 16) % NUM_NATURES;
-
-    if(gender == MON_MALE_TRAINERMON)
-        gender = MON_MALE;
-    if(nature == NATURE_HARDY_TRAINERMON)
-        nature = NATURE_HARDY;
     
     if(gender == MON_MALE)
         genderValue = 255;

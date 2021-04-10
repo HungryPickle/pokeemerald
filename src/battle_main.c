@@ -1933,8 +1933,11 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
     u8 level;
     s32 i, j;
     u16 ev;
+    u8 fixedIV;
     u8 monsCount;
     u8 ability;
+    u8 gender;
+    u8 nature;
     u8 friendship;
     u8 nickname[POKEMON_NAME_LENGTH + 1];
     u8 trainerName[(PLAYER_NAME_LENGTH * 3) + 1];
@@ -1964,16 +1967,18 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
         for (i = 0; i < monsCount; i++)
         {
             const struct TrainerMon *partyData = gTrainers[trainerNum].party.TrainerMon;
-            u8 fixedIV = partyData[i].iv + TRAINER_IV_MODIFIER;
 
-            fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
+            fixedIV = (partyData[i].iv + TRAINER_IV_MODIFIER) * MAX_PER_STAT_IVS / 255;
 
 // Due to the following variables all being derived from personality, all of them must be set at once to persist.
 // Default values: 1st ability, Hardy nature, Male gender, Not shiny.
             if ((partyData[i].ability > 0) || (partyData[i].nature > 0) || (partyData[i].gender > 0) || (partyData[i].shiny == TRUE))
             {
-                ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;  
-                personalityValue = CreateCustomPersonality(ability, partyData[i].nature, partyData[i].gender, partyData[i].shiny);
+                ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;
+                gender = partyData[i].gender == MON_MALE_TRAINERMON ? MON_MALE : partyData[i].gender;
+                nature = partyData[i].nature == NATURE_HARDY_TRAINERMON ? NATURE_HARDY : partyData[i].nature;
+
+                personalityValue = CreateCustomPersonality(ability, nature, gender, partyData[i].shiny);
                 CreateMon(&party[i], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, 0, 0);
             }
             else

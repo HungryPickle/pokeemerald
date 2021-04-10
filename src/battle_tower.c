@@ -2953,6 +2953,8 @@ static void FillPartnerParty(u16 trainerId)
     u32 personalityValue;
     u8 fixedIV;
     u8 ability;
+    u8 nature;
+    u8 gender;
     s32 i, j;
     u32 ivs, level;
     u32 friendship;
@@ -3014,7 +3016,10 @@ static void FillPartnerParty(u16 trainerId)
             if ((partyData[i].ability > 0) || (partyData[i].nature > 0) || (partyData[i].gender > 0) || (partyData[i].shiny == TRUE))
             {
                 ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;
-                personalityValue = CreateCustomPersonality(ability, partyData[i].nature, partyData[i].gender, partyData[i].shiny);
+                gender = partyData[i].gender == MON_MALE_TRAINERMON ? MON_MALE : partyData[i].gender;
+                nature = partyData[i].nature == NATURE_HARDY_TRAINERMON ? NATURE_HARDY : partyData[i].nature;
+
+                personalityValue = CreateCustomPersonality(ability, nature, gender, partyData[i].shiny);
                 CreateMon(&gPlayerParty[i + 3], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, 0, 0);
             }
             else
@@ -3063,8 +3068,6 @@ static void FillPartnerParty(u16 trainerId)
                 for (j = 0; j < MAX_MON_MOVES; j++)
                 {
                     SetMonData(&gPlayerParty[i + 3], MON_DATA_MOVE1 + j, &partyData[i].moves[j]);
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_MOVE1 + j, &partyData[i].moves[j]);
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_PP1 + j, &gBattleMoves[partyData[i].moves[j]].pp);
                     SetMonData(&gPlayerParty[i + 3], MON_DATA_PP1 + j, &gBattleMoves[partyData[i].moves[j]].pp);
                 }
             }
