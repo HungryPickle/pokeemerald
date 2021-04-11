@@ -6998,3 +6998,51 @@ u8 *sub_806F4F8(u8 id, u8 arg1)
         return structPtr->byteArrays[arg1];
     }
 }
+
+u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny)
+{
+    u8 genderValue;
+    u32 otID = T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
+    u32 low16Bits;
+    u32 high16Bits;
+    u32 personality;
+    u8 startingNature;
+    u8 distance;
+    u8 natureValueOfHighBit = (1 << 16) % NUM_NATURES;
+    
+    if(gender == MON_MALE)
+        genderValue = 255;
+    else
+        genderValue = 0;
+
+    low16Bits = genderValue;       
+
+    if(isShiny)
+        high16Bits = HIHALF(otID) ^ LOHALF(otID) ^ low16Bits;
+    else
+        high16Bits = HIHALF(otID) & LOHALF(otID);
+
+    high16Bits = ((high16Bits >> 3) << 3);
+    low16Bits = ((low16Bits >> 3) << 3);
+
+    personality = (high16Bits << 16) + low16Bits;
+
+    startingNature = personality % NUM_NATURES;
+    distance = startingNature < nature ? nature - startingNature : nature + NUM_NATURES - startingNature;
+
+    while (personality % NUM_NATURES != nature || (personality & 1) != abilityIndex) // Loops 0 to 3 times. 
+    { 
+        if(distance % natureValueOfHighBit < SHINY_ODDS)
+        {
+            low16Bits += distance % natureValueOfHighBit;
+            high16Bits += distance / natureValueOfHighBit;
+    
+            personality = (high16Bits << 16) + low16Bits;
+
+            high16Bits = (high16Bits >> 3) << 3;
+            low16Bits = (low16Bits >> 3) << 3;
+        }
+        distance += NUM_NATURES;
+    }
+    return personality;
+}
