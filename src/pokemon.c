@@ -7012,8 +7012,10 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
     
     if(gender == MON_MALE)
         genderValue = 255;
-    else
+    else if(gender == MON_FEMALE)
         genderValue = 0;
+    else
+        genderValue = gender;
 
     low16Bits = genderValue;       
 
