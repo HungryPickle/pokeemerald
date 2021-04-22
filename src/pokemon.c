@@ -7025,8 +7025,10 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
     
     if(gender == MON_MALE)
         genderValue = 255;
-    else
+    else if(gender == MON_FEMALE)
         genderValue = 0;
+    else
+        genderValue = gender;
 
     low16Bits = genderValue;       
 
@@ -7041,8 +7043,7 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
     personality = (high16Bits << 16) + low16Bits;
 
     startingNature = personality % NUM_NATURES;
-    distance = startingNature < nature ?
-        nature - startingNature : nature + NUM_NATURES - startingNature;
+    distance = startingNature < nature ? nature - startingNature : nature + NUM_NATURES - startingNature;
 
     while (personality % NUM_NATURES != nature || (personality & 1) != abilityIndex) // Loops 0 to 3 times. 
     { 
@@ -7058,6 +7059,5 @@ u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny
         }
         distance += NUM_NATURES;
     }
-
     return personality;
 }
