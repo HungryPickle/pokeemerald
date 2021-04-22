@@ -71,8 +71,6 @@
 #define NATURE_QUIRKY   24
 #define NUM_NATURES     25
 
-#define NATURE_HARDY_TRAINERMON 255
-
 // Pokemon Stats
 #define STAT_HP      0
 #define STAT_ATK     1
@@ -90,6 +88,7 @@
 #define DEFAULT_STAT_STAGE 6
 #define MAX_STAT_STAGE    12
 
+//trainer_control TrainerMon
 #define BEST_IV_SPREAD_HIDDEN_POWER_BUG      {31, 31, 31, 30, 31, 30}
 #define BEST_IV_SPREAD_HIDDEN_POWER_DARK     {31, 31, 31, 31, 31, 31}
 #define BEST_IV_SPREAD_HIDDEN_POWER_DRAGON   {30, 31, 31, 31, 31, 31}
@@ -126,6 +125,12 @@
 #define ABILITY_SLOT_1 255
 #define ABILITY_SLOT_2 1
 #define ABILITY_HIDDEN 2
+
+#define PLAYER_LEVEL_OFFSET 1000
+#define MAX_MON_SWAPS 5
+#define MON_SWAP_RANDOM 0
+#define MON_MALE_TRAINERMON 0xFD
+#define NATURE_HARDY_TRAINERMON 0xFF
 
 // Shiny odds
 #define SHINY_ODDS 8 // Actual probability is SHINY_ODDS/65536
@@ -297,8 +302,6 @@
 #define MON_MALE       0x00
 #define MON_FEMALE     0xFE
 #define MON_GENDERLESS 0xFF
-
-#define MON_MALE_TRAINERMON 0xFD
 
 // Constants for AdjustFriendship
 #define FRIENDSHIP_EVENT_GROW_LEVEL       0

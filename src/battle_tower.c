@@ -23,6 +23,7 @@
 #include "field_message_box.h"
 #include "tv.h"
 #include "battle_factory.h"
+#include "battle_main.h"
 #include "constants/apprentice.h"
 #include "constants/battle_dome.h"
 #include "constants/battle_frontier.h"
@@ -2949,22 +2950,18 @@ void TryHideBattleTowerReporter(void)
 
 static void FillPartnerParty(u16 trainerId)
 {
-    u32 nameHash = 0;
-    u32 personalityValue;
-    u8 fixedIV;
-    u8 ability;
-    u8 nature;
-    u8 gender;
-    s32 i, j;
     u32 ivs, level;
-    u32 friendship;
     u16 monId;
     u32 otID;
+    u32 friendship;
+    s32 i, j;
+    u8 monsCount;
 #ifdef BATTLE_ENGINE
     u8 trainerName[(PLAYER_NAME_LENGTH * 3) + 1];
 #else
     u8 trainerName[PLAYER_NAME_LENGTH + 1];
 #endif
+
     SetFacilityPtrsGetLevel();
 
     if (trainerId == TRAINER_STEVEN_PARTNER)
@@ -2999,104 +2996,13 @@ static void FillPartnerParty(u16 trainerId)
 #ifdef BATTLE_ENGINE
     else if (trainerId >= TRAINER_CUSTOM_PARTNER)
     {
-        const struct TrainerMon *partyData = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].party.TrainerMon;
-        otID = Random32();
-
         for (i = 0; i < 3; i++)
             ZeroMonData(&gPlayerParty[i + 3]);
 
-        for (i = 0; i < 3 && i < gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize; i++)
-        {
-            const struct TrainerMon *partyData = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].party.TrainerMon;
+        monsCount = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize < 3 ?
+            gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize : 3;
 
-            fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
-
-// Due to the following variables all being derived from personality, all of them must be set at once to persist.
-// Default values: 1st ability, Hardy nature, Male gender, Not shiny.
-            if ((partyData[i].ability > 0) || (partyData[i].nature > 0) || (partyData[i].gender > 0) || (partyData[i].shiny == TRUE))
-            {
-                ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;
-                gender = partyData[i].gender == MON_MALE_TRAINERMON ? MON_MALE : partyData[i].gender;
-                nature = partyData[i].nature == NATURE_HARDY_TRAINERMON ? NATURE_HARDY : partyData[i].nature;
-
-                personalityValue = CreateCustomPersonality(ability, nature, gender, partyData[i].shiny);
-                CreateMon(&gPlayerParty[i + 3], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, 0, 0);
-            }
-            else
-            {
-                if (gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].doubleBattle == TRUE)
-                    personalityValue = 0x80;
-                else if (gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].encounterMusic_gender & 0x80)
-                    personalityValue = 0x78;
-                else
-                    personalityValue = 0x88;
-
-                for (j = 0; gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].trainerName[j] != EOS; j++)
-                    nameHash += gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].trainerName[j];
-                for (j = 0; gSpeciesNames[partyData[i].species][j] != EOS; j++)
-                    nameHash += gSpeciesNames[partyData[i].species][j];
-
-                personalityValue += nameHash << 8;
-                CreateMon(&gPlayerParty[i + 3], partyData[i].species, partyData[i].lvl, fixedIV, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
-            }
-
-            if (partyData[i].friendship == FRIENDSHIP_FRUSTRATION)
-            {
-                friendship = 0;
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_FRIENDSHIP, &friendship);
-            }
-            else if (partyData[i].friendship > 0)
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_FRIENDSHIP, &partyData[i].friendship);
-
-            if (partyData[i].nickname[0] != '\0')
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_NICKNAME, &partyData[i].nickname);
-
-            if (partyData[i].ability == ABILITY_HIDDEN)
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_ABILITY_NUM, &partyData[i].ability);
-
-// Check if ball was defined for that pokemon.
-            if (partyData[i].ball > 0)
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_POKEBALL, &partyData[i].ball);
-
-// Check if heldItem was defined.
-            if (partyData[i].heldItem > 0)
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_HELD_ITEM, &partyData[i].heldItem);
-
-// Check if moves were defined.
-            if (partyData[i].moves[0] != 0)
-            {
-                for (j = 0; j < MAX_MON_MOVES; j++)
-                {
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_MOVE1 + j, &partyData[i].moves[j]);
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_PP1 + j, &gBattleMoves[partyData[i].moves[j]].pp);
-                }
-            }
-
-// Check for non-constant IV spread.
-            if (partyData[i].iv == 0)
-            {
-                for (j = 0; j < NUM_STATS; j++)
-                {
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_HP_IV + j, &partyData[i].ivs[j]);
-                }
-            }
-            else if (partyData[i].iv == WORST_IVS)
-            {
-                for (j = 0; j < NUM_STATS; j++)
-                {
-                    SetMonData(&gPlayerParty[i + 3], MON_DATA_HP_IV + j, 0);
-                }
-            }
-
-// Set effort values regardless.  Default is 0.
-            for (j = 0; j < NUM_STATS; j++)
-            {
-                SetMonData(&gPlayerParty[i + 3], MON_DATA_HP_EV + j, &partyData[i].evs[j]);
-            }
-            StringCopy(trainerName, gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].trainerName);
-            SetMonData(&gPlayerParty[i + 3], MON_DATA_OT_NAME, trainerName);
-            CalculateMonStats(&gPlayerParty[i + 3]);
-        }
+        CreateNPCTrainerMons(gPlayerParty, trainerId - TRAINER_CUSTOM_PARTNER, monsCount, TRUE);
     }
 #endif
     else if (trainerId == TRAINER_EREADER)

@@ -13,12 +13,20 @@ struct MonCoords
     u8 y_offset;
 };
 
+struct TrainerMonSwap
+{
+    u16 species;
+    u16 moves[MAX_MON_MOVES];
+    u8 lvl;
+};
+
 struct TrainerMon
 {
     u16 iv;
     u8 nickname[POKEMON_NAME_LENGTH + 1];
     u8 ivs[NUM_STATS];
-    u8 lvl;
+    u16 lvl;
+    struct TrainerMonSwap monSwaps[MAX_MON_SWAPS];
     u16 species;
     u16 heldItem;
     u16 moves[MAX_MON_MOVES];
