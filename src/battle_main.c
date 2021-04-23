@@ -1934,7 +1934,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
     u8 fixedIV;
     u8 friendship;
     s16 lvl;
-    u16 species;
+    u16 species = 0;
     u16 moves[MAX_MON_MOVES];
     s8 monSwapLvlIndex = -1;
     u8 monSwapRandomIndex = 0;
@@ -1980,9 +1980,6 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         }
         else
             lvl = partyData[i].lvl;
-        
-        species = partyData[i].species;
-        CpuCopy16(partyData[i].moves, moves, MAX_MON_MOVES);
 
         if(partyData[i].monSwaps[0].species > SPECIES_NONE)
         {
@@ -1991,26 +1988,35 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
                 if(partyData[i].monSwaps[j].species > SPECIES_NONE && playerLevel >= partyData[i].monSwaps[j].lvl && partyData[i].monSwaps[j].lvl > 0)
                 {
                     monSwapLvlIndex = j;
-                    species = partyData[i].monSwaps[j].species;
-                    CpuCopy16(partyData[i].monSwaps[j].moves, moves, MAX_MON_MOVES);
                 }
-            }
-        
-            for(j = monSwapLvlIndex; j < MAX_MON_SWAPS; j++)
-            {
                 if(partyData[i].monSwaps[j].species > SPECIES_NONE && partyData[i].monSwaps[j].lvl == 0)
                 {
                     monSwapRandomIndex = j;
                 }
             }
 
-            j = monSwapRandomIndex >= monSwapLvlIndex ? Random() % (monSwapRandomIndex + 1 - monSwapLvlIndex) : 0;
+            j = monSwapRandomIndex > monSwapLvlIndex ? Random() % (monSwapRandomIndex + 1 - monSwapLvlIndex) : 0;
 
             if(j > 0)
             {
                 species = partyData[i].monSwaps[j + monSwapLvlIndex].species;
-                CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].moves, moves, MAX_MON_MOVES);
+                CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].moves, moves, sizeof(moves));
             }
+            else if(monSwapLvlIndex >= 0)
+            {
+                species = partyData[i].monSwaps[monSwapLvlIndex].species;
+                CpuCopy16(partyData[i].monSwaps[monSwapLvlIndex].moves, moves, sizeof(moves));
+            }
+            else
+            {
+                species = partyData[i].species;
+                CpuCopy16(partyData[i].moves, moves, sizeof(moves));
+            }
+        }
+        else
+        {
+            species = partyData[i].species;
+            CpuCopy16(partyData[i].moves, moves, sizeof(moves));
         }
 
 // Due to the following variables all being derived from personality, all of them must be set at once to persist.
