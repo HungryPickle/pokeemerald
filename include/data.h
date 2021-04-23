@@ -17,7 +17,7 @@ struct TrainerMonSwap
 {
     u16 species;
     u16 moves[MAX_MON_MOVES];
-    u8 lvl;
+    u8 playerLvl;
 };
 
 struct TrainerMon

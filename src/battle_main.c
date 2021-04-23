@@ -1985,11 +1985,11 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         {
             for(j = 0; j < MAX_MON_SWAPS; j++)
             { 
-                if(partyData[i].monSwaps[j].species > SPECIES_NONE && playerLevel >= partyData[i].monSwaps[j].lvl && partyData[i].monSwaps[j].lvl > 0)
+                if(partyData[i].monSwaps[j].species > SPECIES_NONE && playerLevel >= partyData[i].monSwaps[j].playerLvl && partyData[i].monSwaps[j].playerLvl > 0)
                 {
                     monSwapLvlIndex = j;
                 }
-                if(partyData[i].monSwaps[j].species > SPECIES_NONE && partyData[i].monSwaps[j].lvl == 0)
+                if(partyData[i].monSwaps[j].species > SPECIES_NONE && partyData[i].monSwaps[j].playerLvl == 0)
                 {
                     monSwapRandomIndex = j;
                 }
