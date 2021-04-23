@@ -7012,7 +7012,7 @@ u8 *sub_806F4F8(u8 id, u8 arg1)
     }
 }
 
-u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool8 isShiny)
+u32 CreateCustomPersonality(u8 abilityIndex, u8 nature, u8 gender, bool32 isShiny)
 {
     u8 genderValue;
     u32 otID = T1_READ_32(gSaveBlock2Ptr->playerTrainerId);
