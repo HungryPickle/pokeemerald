@@ -1954,8 +1954,9 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
     {
         const struct TrainerMon *partyData = gTrainers[trainerNum].party.TrainerMon;
 
-        fixedIV = (partyData[i].iv + TRAINER_IV_MODIFIER) * MAX_PER_STAT_IVS / 255;
+        fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
 
+// Set base-game personality.
         if (gTrainers[trainerNum].doubleBattle == TRUE)
             personalityValue = 0x80;
         else if (gTrainers[trainerNum].encounterMusic_gender & 0x80)
@@ -1970,6 +1971,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
 
         personalityValue += nameHash << 8;
 
+// Check for player level offset and set level.
         if (partyData[i].lvl > MAX_LEVEL)
         {
             lvl = partyData[i].lvl + playerLevel - PLAYER_LEVEL_OFFSET;
@@ -1981,6 +1983,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         else
             lvl = partyData[i].lvl;
 
+// Check for mon swaps and roll random swap if applicable.
         if(partyData[i].monSwaps[0].species > SPECIES_NONE)
         {
             for(j = 0; j < MAX_MON_SWAPS; j++)
@@ -2043,6 +2046,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         else
             CreateMon(&party[i + b], species, lvl, fixedIV, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
 
+// Check for and set friendship.
         if (partyData[i].friendship == FRIENDSHIP_FRUSTRATION)
         {
             friendship = 0;
@@ -2051,9 +2055,11 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         else if (partyData[i].friendship > 0)
             SetMonData(&party[i + b], MON_DATA_FRIENDSHIP, &partyData[i].friendship);
 
+// Check for and set nickname.
         if (partyData[i].nickname[0] != '\0')
             SetMonData(&party[i + b], MON_DATA_NICKNAME, &partyData[i].nickname);
 
+// Check for and set hidden ability.
         if (partyData[i].ability == ABILITY_HIDDEN)
             SetMonData(&party[i + b], MON_DATA_ABILITY_NUM, &partyData[i].ability);
 

@@ -368,6 +368,4 @@
 
 #define F_TRAINER_FEMALE (1 << 7)
 
-#define TRAINER_IV_MODIFIER       0
-
 #endif  // GUARD_TRAINERS_H

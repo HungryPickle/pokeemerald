@@ -88,7 +88,7 @@
 #define DEFAULT_STAT_STAGE 6
 #define MAX_STAT_STAGE    12
 
-//trainer_control TrainerMon
+// trainer_control TrainerMon
 #define BEST_IV_SPREAD_HIDDEN_POWER_BUG      {31, 31, 31, 30, 31, 30}
 #define BEST_IV_SPREAD_HIDDEN_POWER_DARK     {31, 31, 31, 31, 31, 31}
 #define BEST_IV_SPREAD_HIDDEN_POWER_DRAGON   {30, 31, 31, 31, 31, 31}

@@ -17,26 +17,26 @@ struct TrainerMonSwap
 {
     u16 species;
     u16 moves[MAX_MON_MOVES];
-    u8 playerLvl;
+    u8 playerLvl; // If the player has a pokemon >= this level, the mon swap triggers. A value of MON_SWAP_RANDOM, 0, or no value means this mon swap triggers at random.
 };
 
-struct TrainerMon
+struct TrainerMon // see include/constants/pokemon.h for all constants as of 4/23/21
 {
-    u16 iv;
-    u8 nickname[POKEMON_NAME_LENGTH + 1];
-    u8 ivs[NUM_STATS];
-    u16 lvl;
-    struct TrainerMonSwap monSwaps[MAX_MON_SWAPS];
-    u16 species;
-    u16 heldItem;
-    u16 moves[MAX_MON_MOVES];
-    u8 gender;
-    u8 nature;
-    u8 ability;
-    u8 evs[NUM_STATS];
-    u8 ball;
-    bool32 shiny;
-    u8 friendship;
+    u16 iv; // 0-255 or USE_RANDOM_IVS
+    u8 nickname[POKEMON_NAME_LENGTH + 1]; // _("Bruce")
+    u8 ivs[NUM_STATS]; // BEST_IV_SPREAD_HIDDEN_POWER_BUG or {4, 20, 4, 20, 4, 20}
+    u16 lvl; // value or PLAYER_LEVEL_OFFSET + value
+    struct TrainerMonSwap monSwaps[MAX_MON_SWAPS]; // { {SPECIES_BUTTERFREE, {MOVE_NONE}, 10}, {SPECIES_BEEDRILL, {MOVE_PIN_MISSILE}, MON_SWAP_RANDOM} }
+    u16 species; // SPECIES_MURKROW
+    u16 heldItem; // ITEM_LEFTOVERS
+    u16 moves[MAX_MON_MOVES]; // {MOVE_EMBER, MOVE_TACKLE, MOVE_MAGNITUDE, MOVE_SUNNY_DAY}
+    u8 gender; // MON_MALE_TRAINERMON, MON_FEMALE, or value
+    u8 nature; // NATURE_HARDY_TRAINERMON, NATURE_LONELY
+    u8 ability; // ABILITY_SLOT_1, ABILITY_SLOT_2, ABILITY_HIDDEN
+    u8 evs[NUM_STATS]; // MAX_EV_SPREAD or {4, 252, 0, 252, 0, 0}
+    u8 ball; // ITEM_LUXURY_BALL
+    bool32 shiny; // TRUE, FALSE
+    u8 friendship; // FRIENDSHIP_FRUSTRATION, FRIENDSHIP_RETURN, or value
 };
 
 union TrainerMonPtr
