@@ -1937,7 +1937,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
     u16 species = 0;
     u16 moves[MAX_MON_MOVES];
     s8 monSwapLvlIndex = -1;
-    u8 monSwapRandomIndex = 0;
+    s8 monSwapRandomIndex = -1;
     u8 ability, nature, gender;
     u8 playerLevel = GetHighestLevelInPlayerParty();
     u8 b = 0;
@@ -1988,14 +1988,17 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         {
             for(j = 0; j < MAX_MON_SWAPS; j++)
             { 
-                if(partyData[i].monSwaps[j].species > SPECIES_NONE && playerLevel >= partyData[i].monSwaps[j].playerLvl && partyData[i].monSwaps[j].playerLvl > 0)
-                {
-                    monSwapLvlIndex = j;
-                }
-                if(partyData[i].monSwaps[j].species > SPECIES_NONE && partyData[i].monSwaps[j].playerLvl == 0)
-                {
+                if (partyData[i].monSwaps[j].species == SPECIES_NONE)
+                    break;
+
+                else if(partyData[i].monSwaps[j].playerLvl == MON_SWAP_RANDOM)
                     monSwapRandomIndex = j;
-                }
+
+                else if(partyData[i].monSwaps[j].playerLvl <= playerLevel)
+                    monSwapLvlIndex = j;
+
+                else
+                    break;
             }
 
             j = monSwapRandomIndex > monSwapLvlIndex ? Random() % (monSwapRandomIndex + 1 - monSwapLvlIndex) : 0;
