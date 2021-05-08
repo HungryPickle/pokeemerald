@@ -126,7 +126,7 @@
 #define ABILITY_SLOT_2 1
 #define ABILITY_HIDDEN 2
 
-#define PLAYER_LEVEL_OFFSET 1000
+#define PLAYER_LEVEL_OFFSET 1000 // If player's highest lvl pokemon is 50 then a TrainerMon with .lvl = PLAYER_LEVEL_OFFSET - 5 is lvl 45.
 #define MAX_MON_SWAPS 5
 #define MON_SWAP_RANDOM 0
 #define MON_MALE_TRAINERMON 0xFD
