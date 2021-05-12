@@ -1934,7 +1934,7 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
     u8 fixedIV;
     u8 friendship;
     s16 lvl;
-    u16 species = 0;
+    u16 species;
     u16 moves[MAX_MON_MOVES];
     s8 monSwapLvlIndex = -1;
     s8 monSwapRandomIndex = -1;
@@ -1971,18 +1971,6 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
 
         personalityValue += nameHash << 8;
 
-// Check for player level offset and set level.
-        if (partyData[i].lvl > MAX_LEVEL)
-        {
-            lvl = partyData[i].lvl + playerLevel - PLAYER_LEVEL_OFFSET;
-            if (lvl < MIN_LEVEL)
-                lvl = MIN_LEVEL;
-            else if (lvl > MAX_LEVEL)
-                lvl = MAX_LEVEL;
-        }
-        else
-            lvl = partyData[i].lvl;
-
 // Check for mon swaps and roll random swap if applicable.
         if(partyData[i].monSwaps[0].species > SPECIES_NONE)
         {
@@ -2007,22 +1995,36 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
             {
                 species = partyData[i].monSwaps[j + monSwapLvlIndex].species;
                 CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].moves, moves, sizeof(moves));
+                lvl = partyData[i].monSwaps[j + monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[j + monSwapLvlIndex].lvl : partyData[i].lvl;
             }
             else if(monSwapLvlIndex >= 0)
             {
                 species = partyData[i].monSwaps[monSwapLvlIndex].species;
                 CpuCopy16(partyData[i].monSwaps[monSwapLvlIndex].moves, moves, sizeof(moves));
+                lvl = partyData[i].monSwaps[monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[monSwapLvlIndex].lvl : partyData[i].lvl;
             }
             else
             {
                 species = partyData[i].species;
                 CpuCopy16(partyData[i].moves, moves, sizeof(moves));
+                lvl = partyData[i].lvl;
             }
         }
         else
         {
             species = partyData[i].species;
             CpuCopy16(partyData[i].moves, moves, sizeof(moves));
+            lvl = partyData[i].lvl;
+        }
+
+// Check for player level offset.
+        if (lvl > MAX_LEVEL)
+        {
+            lvl = lvl + playerLevel - PLAYER_LEVEL_OFFSET;
+            if (lvl < MIN_LEVEL)
+                lvl = MIN_LEVEL;
+            else if (lvl > MAX_LEVEL)
+                lvl = MAX_LEVEL;
         }
 
 // Due to the following variables all being derived from personality, all of them must be set at once to persist.
