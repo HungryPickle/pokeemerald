@@ -434,24 +434,24 @@ const u8 gTypeEffectiveness[336] =
 
 const u8 gTypeNames[NUMBER_OF_MON_TYPES][TYPE_NAME_LENGTH + 1] =
 {
-    _("NORMAL"),
-    _("FIGHT"),
-    _("FLYING"),
-    _("POISON"),
-    _("GROUND"),
-    _("ROCK"),
-    _("BUG"),
-    _("GHOST"),
-    _("STEEL"),
-    _("???"),
-    _("FIRE"),
-    _("WATER"),
-    _("GRASS"),
-    _("ELECTR"),
-    _("PSYCHC"),
-    _("ICE"),
-    _("DRAGON"),
-    _("DARK"),
+    [TYPE_NORMAL] = _("NORMAL"),
+    [TYPE_FIGHTING] = _("FIGHT"),
+    [TYPE_FLYING] = _("FLYING"),
+    [TYPE_POISON] = _("POISON"),
+    [TYPE_GROUND] = _("GROUND"),
+    [TYPE_ROCK] = _("ROCK"),
+    [TYPE_BUG] = _("BUG"),
+    [TYPE_GHOST] = _("GHOST"),
+    [TYPE_STEEL] = _("STEEL"),
+    [TYPE_MYSTERY] = _("???"),
+    [TYPE_FIRE] = _("FIRE"),
+    [TYPE_WATER] = _("WATER"),
+    [TYPE_GRASS] = _("GRASS"),
+    [TYPE_ELECTRIC] = _("ELECTR"),
+    [TYPE_PSYCHIC] = _("PSYCHC"),
+    [TYPE_ICE] = _("ICE"),
+    [TYPE_DRAGON] = _("DRAGON"),
+    [TYPE_DARK] = _("DARK"),
 };
 
 // This is a factor in how much money you get for beating a trainer.
@@ -611,22 +611,22 @@ static void CB2_InitBattleInternal(void)
     CpuFill32(0, (void*)(VRAM), VRAM_SIZE);
 
     SetGpuReg(REG_OFFSET_MOSAIC, 0);
-    SetGpuReg(REG_OFFSET_WIN0H, 240);
-    SetGpuReg(REG_OFFSET_WIN0V, 0x5051);
+    SetGpuReg(REG_OFFSET_WIN0H, DISPLAY_WIDTH);
+    SetGpuReg(REG_OFFSET_WIN0V, WIN_RANGE(DISPLAY_HEIGHT / 2, DISPLAY_HEIGHT / 2 + 1));
     SetGpuReg(REG_OFFSET_WININ, 0);
     SetGpuReg(REG_OFFSET_WINOUT, 0);
 
-    gBattle_WIN0H = 240;
+    gBattle_WIN0H = DISPLAY_WIDTH;
 
     if (gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER && gPartnerTrainerId != TRAINER_STEVEN_PARTNER)
     {
-        gBattle_WIN0V = 159;
-        gBattle_WIN1H = 240;
+        gBattle_WIN0V = DISPLAY_HEIGHT - 1;
+        gBattle_WIN1H = DISPLAY_WIDTH;
         gBattle_WIN1V = 32;
     }
     else
     {
-        gBattle_WIN0V = 0x5051;
+        gBattle_WIN0V = WIN_RANGE(DISPLAY_HEIGHT / 2, DISPLAY_HEIGHT / 2 + 1);
         ScanlineEffect_Clear();
 
         i = 0;
@@ -1960,9 +1960,9 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, b
         if (gTrainers[trainerNum].doubleBattle == TRUE)
             personalityValue = 0x80;
         else if (gTrainers[trainerNum].encounterMusic_gender & 0x80)
-            personalityValue = 0x78;
+            personalityValue = 0x78; // Use personality more likely to result in a female Pokémon
         else
-            personalityValue = 0x88;
+            personalityValue = 0x88; // Use personality more likely to result in a male Pokémon
 
         for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
             nameHash += gTrainers[trainerNum].trainerName[j];          
@@ -2156,7 +2156,7 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
 void sub_8038A04(void) // unused
 {
     if (REG_VCOUNT < 0xA0 && REG_VCOUNT >= 0x6F)
-        SetGpuReg(REG_OFFSET_BG0CNT, 0x9800);
+        SetGpuReg(REG_OFFSET_BG0CNT, BGCNT_SCREENBASE(24) | BGCNT_TXT256x512);
 }
 
 void VBlankCB_Battle(void)
@@ -5148,7 +5148,7 @@ static void HandleEndTurn_FinishBattle(void)
                     }
                 }
             }
-            PutPokemonTodayCaughtOnAir();
+            TryPutPokemonTodayOnAir();
         }
 
         if (!(gBattleTypeFlags & (BATTLE_TYPE_LINK
@@ -5161,7 +5161,7 @@ static void HandleEndTurn_FinishBattle(void)
                                   | BATTLE_TYPE_WALLY_TUTORIAL))
             && gBattleResults.shinyWildMon)
         {
-            sub_80EE184();
+            TryPutBreakingNewsOnAir();
         }
 
         sub_8186444();
@@ -5257,7 +5257,12 @@ static void ReturnFromBattleToOverworld(void)
     if (gBattleTypeFlags & BATTLE_TYPE_ROAMER)
     {
         UpdateRoamerHPStatus(&gEnemyParty[0]);
+
+#ifndef BUGFIX
         if ((gBattleOutcome & B_OUTCOME_WON) || gBattleOutcome == B_OUTCOME_CAUGHT)
+#else
+        if ((gBattleOutcome == B_OUTCOME_WON) || gBattleOutcome == B_OUTCOME_CAUGHT) // Bug: When Roar is used by roamer, gBattleOutcome is B_OUTCOME_PLAYER_TELEPORTED (5).
+#endif                                                                               // & with B_OUTCOME_WON (1) will return TRUE and deactivates the roamer.
             SetRoamerInactive();
     }
 
