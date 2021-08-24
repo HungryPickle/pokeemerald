@@ -2037,7 +2037,7 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
             }
             case F_TRAINER_PARTY_CUSTOM:
             {
-                CreateNPCTrainerMons(party, trainerNum, i, FALSE);
+                CreateNPCTrainerMonCustomMon(party, trainerNum, i, FALSE);
                 break;
             }
             }
@@ -2049,8 +2049,9 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
     return gTrainers[trainerNum].partySize;
 }
 
-void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner)
+void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner)
 {
+    const struct TrainerMonCustom *partyData = gTrainers[trainerNum].party.Custom;
     u32 nameHash = 0;
     u32 personalityValue;
     s32 i = monIndex;
@@ -2073,8 +2074,6 @@ void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monIndex, bo
 
     if(battleTowerPartner)
         b = 3;
-
-    const struct TrainerMonCustom *partyData = gTrainers[trainerNum].party.Custom;
 
     fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
 

@@ -3002,7 +3002,7 @@ static void FillPartnerParty(u16 trainerId)
             gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize : 3;
         
         for (i = 0; i < monsCount; i ++)
-            CreateNPCTrainerMons(gPlayerParty, trainerId - TRAINER_CUSTOM_PARTNER, i, TRUE);
+            CreateNPCTrainerMonCustomMon(gPlayerParty, trainerId - TRAINER_CUSTOM_PARTNER, i, TRUE);
 
     }
 #endif
