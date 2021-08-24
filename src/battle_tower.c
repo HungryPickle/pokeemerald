@@ -23,6 +23,7 @@
 #include "field_message_box.h"
 #include "tv.h"
 #include "battle_factory.h"
+#include "battle_main.h"
 #include "constants/apprentice.h"
 #include "constants/battle_dome.h"
 #include "constants/battle_frontier.h"
@@ -2953,7 +2954,13 @@ static void FillPartnerParty(u16 trainerId)
     u32 friendship;
     u16 monId;
     u32 otID;
+    u8 monsCount;
+#ifdef BATTLE_ENGINE
+    u8 trainerName[(PLAYER_NAME_LENGTH * 3) + 1];
+#else
     u8 trainerName[PLAYER_NAME_LENGTH + 1];
+#endif
+
     SetFacilityPtrsGetLevel();
 
     if (trainerId == TRAINER_STEVEN_PARTNER)
@@ -2985,6 +2992,20 @@ static void FillPartnerParty(u16 trainerId)
             CalculateMonStats(&gPlayerParty[MULTI_PARTY_SIZE + i]);
         }
     }
+#ifdef BATTLE_ENGINE
+    else if (trainerId >= TRAINER_CUSTOM_PARTNER)
+    {
+        for (i = 0; i < 3; i++)
+            ZeroMonData(&gPlayerParty[i + 3]);
+
+        monsCount = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize < 3 ?
+            gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize : 3;
+        
+        for (i = 0; i < monsCount; i ++)
+            CreateNPCTrainerMons(gPlayerParty, trainerId - TRAINER_CUSTOM_PARTNER, i, TRUE);
+
+    }
+#endif
     else if (trainerId == TRAINER_EREADER)
     {
         // Scrapped, lol.

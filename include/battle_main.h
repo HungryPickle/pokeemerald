@@ -81,6 +81,7 @@ void RunBattleScriptCommands_PopCallbacksStack(void);
 void RunBattleScriptCommands(void);
 bool8 TryRunFromBattle(u8 battlerId);
 void SpecialStatusesClear(void);
+void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monsCount, bool8 battleTowerPartner);
 
 extern struct UnknownPokemonStruct4 gMultiPartnerParty[MULTI_PARTY_SIZE];
 

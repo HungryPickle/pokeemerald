@@ -51,12 +51,40 @@ struct TrainerMonItemCustomMoves
     u16 moves[MAX_MON_MOVES];
 };
 
-union TrainerMonPtr
+struct TrainerMonSwap
+{
+    u16 species;
+    u16 lvl;
+    u16 moves[MAX_MON_MOVES];
+    u16 playerLvl; // If the player has a pokemon >= this level, the mon swap triggers. A value of MON_SWAP_RANDOM, 0, or no value means this mon swap triggers at random.
+};
+
+struct TrainerMonCustom // see include/constants/pokemon.h for constants
+{
+    u16 iv; 
+    u8 nickname[POKEMON_NAME_LENGTH + 1];
+    u8 ivs[NUM_STATS]; 
+    u16 lvl; 
+    struct TrainerMonSwap monSwaps[MAX_MON_SWAPS]; 
+    u16 species; 
+    u16 heldItem; 
+    u16 moves[MAX_MON_MOVES]; 
+    u8 gender; 
+    u8 nature; 
+    u8 ability; 
+    u8 evs[NUM_STATS]; 
+    u8 ball; 
+    bool32 shiny; 
+    u8 friendship; 
+};
+
+union TrainerMonPtr 
 {
     const struct TrainerMonNoItemDefaultMoves *NoItemDefaultMoves;
     const struct TrainerMonNoItemCustomMoves *NoItemCustomMoves;
     const struct TrainerMonItemDefaultMoves *ItemDefaultMoves;
     const struct TrainerMonItemCustomMoves *ItemCustomMoves;
+    const struct TrainerMonCustom *Custom;
 };
 
 struct Trainer

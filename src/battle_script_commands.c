@@ -5552,8 +5552,8 @@ static u32 GetTrainerMoneyToGive(u16 trainerId)
         case F_TRAINER_PARTY_CUSTOM_MOVESET:
             {
                 const struct TrainerMonNoItemCustomMoves *party = gTrainers[trainerId].party.NoItemCustomMoves;
-                lastMonLevel = party[gTrainers[trainerId].partySize - 1].lvl;
-            }
+        lastMonLevel = party[gTrainers[trainerId].partySize - 1].lvl;
+                    }
             break;
         case F_TRAINER_PARTY_HELD_ITEM:
             {
@@ -5567,8 +5567,13 @@ static u32 GetTrainerMoneyToGive(u16 trainerId)
                 lastMonLevel = party[gTrainers[trainerId].partySize - 1].lvl;
             }
             break;
+        case F_TRAINER_PARTY_CUSTOM:
+            {
+                const struct TrainerMonCustom *party = gTrainers[trainerId].party.Custom;
+                lastMonLevel = party[gTrainers[trainerId].partySize - 1].lvl;
+            }
         }
-
+ 
         for (; gTrainerMoneyTable[i].classId != 0xFF; i++)
         {
             if (gTrainerMoneyTable[i].classId == gTrainers[trainerId].trainerClass)

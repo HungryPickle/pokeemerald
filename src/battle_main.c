@@ -2035,6 +2035,11 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
                 }
                 break;
             }
+            case F_TRAINER_PARTY_CUSTOM:
+            {
+                CreateNPCTrainerMons(party, trainerNum, i, FALSE);
+                break;
+            }
             }
         }
 
@@ -2042,6 +2047,196 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
     }
 
     return gTrainers[trainerNum].partySize;
+}
+
+void CreateNPCTrainerMons(struct Pokemon *party, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner)
+{
+    u32 nameHash = 0;
+    u32 personalityValue;
+    s32 i = monIndex;
+    s32 j;
+    u8 fixedIV;
+    u8 friendship;
+    s16 lvl;
+    u16 species;
+    u16 moves[MAX_MON_MOVES];
+    s8 monSwapLvlIndex = -1;
+    s8 monSwapRandomIndex = -1;
+    u8 ability, nature, gender;
+    u8 playerLevel = GetHighestLevelInPlayerParty();
+    u8 b = 0;
+#ifdef BATTLE_ENGINE
+    u8 trainerName[(PLAYER_NAME_LENGTH * 3) + 1];
+#else
+    u8 trainerName[PLAYER_NAME_LENGTH + 1];
+#endif
+
+    if(battleTowerPartner)
+        b = 3;
+
+    const struct TrainerMonCustom *partyData = gTrainers[trainerNum].party.Custom;
+
+    fixedIV = partyData[i].iv * MAX_PER_STAT_IVS / 255;
+
+// Set base-game personality.
+    if (gTrainers[trainerNum].doubleBattle == TRUE)
+        personalityValue = 0x80;
+    else if (gTrainers[trainerNum].encounterMusic_gender & 0x80)
+        personalityValue = 0x78; // Use personality more likely to result in a female Pokémon
+    else
+        personalityValue = 0x88; // Use personality more likely to result in a male Pokémon
+
+    for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
+        nameHash += gTrainers[trainerNum].trainerName[j];          
+    for (j = 0; gSpeciesNames[partyData[i].species][j] != EOS; j++)
+        nameHash += gSpeciesNames[partyData[i].species][j];
+
+    personalityValue += nameHash << 8;
+
+// Check for mon swaps and roll random swap if applicable.
+    if(partyData[i].monSwaps[0].species > SPECIES_NONE)
+    {
+        for(j = 0; j < MAX_MON_SWAPS; j++)
+        { 
+            if (partyData[i].monSwaps[j].species == SPECIES_NONE)
+                break;
+
+            else if(partyData[i].monSwaps[j].playerLvl == MON_SWAP_RANDOM)
+                monSwapRandomIndex = j;
+
+            else if(partyData[i].monSwaps[j].playerLvl <= playerLevel)
+                monSwapLvlIndex = j;
+
+            else
+                break;
+        }
+
+        j = monSwapRandomIndex > monSwapLvlIndex ? Random() % (monSwapRandomIndex + 1 - monSwapLvlIndex) : 0;
+
+        if(j > 0)
+        {
+            species = partyData[i].monSwaps[j + monSwapLvlIndex].species;
+            CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].moves, moves, sizeof(moves));
+            lvl = partyData[i].monSwaps[j + monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[j + monSwapLvlIndex].lvl : partyData[i].lvl;
+        }
+        else if(monSwapLvlIndex >= 0)
+        {
+            species = partyData[i].monSwaps[monSwapLvlIndex].species;
+            CpuCopy16(partyData[i].monSwaps[monSwapLvlIndex].moves, moves, sizeof(moves));
+            lvl = partyData[i].monSwaps[monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[monSwapLvlIndex].lvl : partyData[i].lvl;
+        }
+        else
+        {
+            species = partyData[i].species;
+            CpuCopy16(partyData[i].moves, moves, sizeof(moves));
+            lvl = partyData[i].lvl;
+        }
+    }
+    else
+    {
+        species = partyData[i].species;
+        CpuCopy16(partyData[i].moves, moves, sizeof(moves));
+        lvl = partyData[i].lvl;
+    }
+
+// Check for player level offset.
+    if (lvl > MAX_LEVEL)
+    {
+        lvl = lvl + playerLevel - PLAYER_LEVEL_OFFSET;
+        if (lvl < MIN_LEVEL)
+            lvl = MIN_LEVEL;
+        else if (lvl > MAX_LEVEL)
+            lvl = MAX_LEVEL;
+    }
+
+// Due to the following variables all being derived from personality, all of them must be set at once to persist.
+    if (partyData[i].ability + partyData[i].nature + partyData[i].gender + partyData[i].shiny > 0 )
+    {
+        if (partyData[i].ability > 0)
+            ability = partyData[i].ability == ABILITY_SLOT_2 ? 1 : 0;
+        else
+            ability = personalityValue & 0x01;
+
+        if (partyData[i].nature > 0)
+            nature = partyData[i].nature == NATURE_HARDY_TRAINERMON ? NATURE_HARDY : partyData[i].nature;
+        else
+            nature = personalityValue % NUM_NATURES;
+
+        if (partyData[i].gender > 0)
+            gender = partyData[i].gender == MON_MALE_TRAINERMON ? MON_MALE : partyData[i].gender;
+        else //Rarely, CreateCustomPersonality will add 7 to personality. 0x78 + 7 = 127 (incorrectly a Male gender) Bleh.
+            gender = (personalityValue & 0xFF) == 0x78 ? 0x70 : personalityValue & 0xFF;
+
+        personalityValue = CreateCustomPersonality(ability, nature, gender, partyData[i].shiny);
+        CreateMon(&party[i + b], species, lvl, fixedIV, TRUE, personalityValue, 0, 0);
+    }
+    else
+        CreateMon(&party[i + b], species, lvl, fixedIV, TRUE, personalityValue, OT_ID_RANDOM_NO_SHINY, 0);
+
+// Check for and set friendship.
+    if (partyData[i].friendship == FRIENDSHIP_FRUSTRATION)
+    {
+        friendship = 0;
+        SetMonData(&party[i + b], MON_DATA_FRIENDSHIP, &friendship);
+    }
+    else if (partyData[i].friendship > 0)
+        SetMonData(&party[i + b], MON_DATA_FRIENDSHIP, &partyData[i].friendship);
+
+// Check for and set nickname.
+    if (partyData[i].nickname[0] != '\0')
+        SetMonData(&party[i + b], MON_DATA_NICKNAME, &partyData[i].nickname);
+
+// Check for and set hidden ability.
+    if (partyData[i].ability == ABILITY_HIDDEN)
+        SetMonData(&party[i + b], MON_DATA_ABILITY_NUM, &partyData[i].ability);
+
+// Check if ball was defined for that pokemon.
+    if (partyData[i].ball > 0)
+        SetMonData(&party[i + b], MON_DATA_POKEBALL, &partyData[i].ball);
+
+// Check if heldItem was defined.
+    if (partyData[i].heldItem > 0)
+        SetMonData(&party[i + b], MON_DATA_HELD_ITEM, &partyData[i].heldItem);
+
+// Check if moves were defined.
+    if (moves[0] > 0)
+    {
+        for (j = 0; j < MAX_MON_MOVES; j++)
+        {
+            SetMonData(&party[i + b], MON_DATA_MOVE1 + j, &moves[j]);
+            SetMonData(&party[i + b], MON_DATA_PP1 + j, &gBattleMoves[moves[j]].pp);
+        }
+    }
+
+// Check for non-constant IV spread.
+    if (partyData[i].iv == 0)
+    {
+        for (j = 0; j < NUM_STATS; j++)
+        {
+            SetMonData(&party[i + b], MON_DATA_HP_IV + j, &partyData[i].ivs[j]);
+        }
+    }
+    else if (partyData[i].iv == WORST_IVS)
+    {
+        for (j = 0; j < NUM_STATS; j++)
+        {
+            SetMonData(&party[i + b], MON_DATA_HP_IV + j, 0);
+        }
+    }
+
+// Set effort values regardless.  Default is 0.
+    for (j = 0; j < NUM_STATS; j++)
+    {
+        SetMonData(&party[i + b], MON_DATA_HP_EV + j, &partyData[i].evs[j]);
+    }
+    
+    if(battleTowerPartner)
+    {
+        StringCopy(trainerName, gTrainers[trainerNum].trainerName);
+        SetMonData(&party[i + b], MON_DATA_OT_NAME, trainerName);
+    }
+
+    CalculateMonStats(&party[i + b]);
 }
 
 void sub_8038A04(void) // unused
