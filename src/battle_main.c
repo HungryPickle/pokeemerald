@@ -2037,7 +2037,8 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
             }
             case F_TRAINER_PARTY_CUSTOM:
             {
-                CreateNPCTrainerMonCustomMon(party, trainerNum, i, FALSE);
+                const struct TrainerMonCustom *partyData = gTrainers[trainerNum].party.Custom;
+                CreateNPCTrainerMonCustomMon(party, partyData, trainerNum, i, FALSE);
                 break;
             }
             }
@@ -2049,9 +2050,8 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
     return gTrainers[trainerNum].partySize;
 }
 
-void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner)
+void CreateNPCTrainerMonCustomMon(struct Pokemon *party, const struct TrainerMonCustom *partyData, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner)
 {
-    const struct TrainerMonCustom *partyData = gTrainers[trainerNum].party.Custom;
     u32 nameHash = 0;
     u32 personalityValue;
     s32 i = monIndex;
@@ -2093,17 +2093,17 @@ void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monI
     personalityValue += nameHash << 8;
 
 // Check for mon swaps and roll random swap if applicable.
-    if(partyData[i].monSwaps[0].species > SPECIES_NONE)
+    if(partyData[i].monSwaps[0].swapSpecies > SPECIES_NONE)
     {
         for(j = 0; j < MAX_MON_SWAPS; j++)
         { 
-            if (partyData[i].monSwaps[j].species == SPECIES_NONE)
+            if (partyData[i].monSwaps[j].swapSpecies == SPECIES_NONE)
                 break;
 
-            else if(partyData[i].monSwaps[j].playerLvl == MON_SWAP_RANDOM)
+            else if(partyData[i].monSwaps[j].swapAtPlayerLvl == MON_SWAP_RANDOM)
                 monSwapRandomIndex = j;
 
-            else if(partyData[i].monSwaps[j].playerLvl <= playerLevel)
+            else if(partyData[i].monSwaps[j].swapAtPlayerLvl <= playerLevel)
                 monSwapLvlIndex = j;
 
             else
@@ -2114,15 +2114,15 @@ void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monI
 
         if(j > 0)
         {
-            species = partyData[i].monSwaps[j + monSwapLvlIndex].species;
-            CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].moves, moves, sizeof(moves));
-            lvl = partyData[i].monSwaps[j + monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[j + monSwapLvlIndex].lvl : partyData[i].lvl;
+            species = partyData[i].monSwaps[j + monSwapLvlIndex].swapSpecies;
+            CpuCopy16(partyData[i].monSwaps[j + monSwapLvlIndex].swapMoves, moves, sizeof(moves));
+            lvl = partyData[i].monSwaps[j + monSwapLvlIndex].swapLvl > 0 ? partyData[i].monSwaps[j + monSwapLvlIndex].swapLvl : partyData[i].lvl;
         }
         else if(monSwapLvlIndex >= 0)
         {
-            species = partyData[i].monSwaps[monSwapLvlIndex].species;
-            CpuCopy16(partyData[i].monSwaps[monSwapLvlIndex].moves, moves, sizeof(moves));
-            lvl = partyData[i].monSwaps[monSwapLvlIndex].lvl > 0 ? partyData[i].monSwaps[monSwapLvlIndex].lvl : partyData[i].lvl;
+            species = partyData[i].monSwaps[monSwapLvlIndex].swapSpecies;
+            CpuCopy16(partyData[i].monSwaps[monSwapLvlIndex].swapMoves, moves, sizeof(moves));
+            lvl = partyData[i].monSwaps[monSwapLvlIndex].swapLvl > 0 ? partyData[i].monSwaps[monSwapLvlIndex].swapLvl : partyData[i].lvl;
         }
         else
         {
@@ -2232,7 +2232,7 @@ void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monI
     if(battleTowerPartner)
     {
         StringCopy(trainerName, gTrainers[trainerNum].trainerName);
-        SetMonData(&party[i + b], MON_DATA_OT_NAME, trainerName);
+        SetMonData(&party[i + b], MON_DATA_OT_NAME, &trainerName);
     }
 
     CalculateMonStats(&party[i + b]);

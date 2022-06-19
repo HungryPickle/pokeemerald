@@ -1,6 +1,8 @@
 #ifndef GUARD_BATTLE_MAIN_H
 #define GUARD_BATTLE_MAIN_H
 
+#include "data.h"
+
 struct TrainerMoney
 {
     u8 classId;
@@ -81,7 +83,7 @@ void RunBattleScriptCommands_PopCallbacksStack(void);
 void RunBattleScriptCommands(void);
 bool8 TryRunFromBattle(u8 battlerId);
 void SpecialStatusesClear(void);
-void CreateNPCTrainerMonCustomMon(struct Pokemon *party, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner);
+void CreateNPCTrainerMonCustomMon(struct Pokemon *party, const struct TrainerMonCustom *partyData, u16 trainerNum, u8 monIndex, bool8 battleTowerPartner);
 
 extern struct UnknownPokemonStruct4 gMultiPartnerParty[MULTI_PARTY_SIZE];
 

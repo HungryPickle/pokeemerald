@@ -53,10 +53,10 @@ struct TrainerMonItemCustomMoves
 
 struct TrainerMonSwap
 {
-    u16 species;
-    u16 lvl;
-    u16 moves[MAX_MON_MOVES];
-    u16 playerLvl; // If the player has a pokemon >= this level, the mon swap triggers. A value of MON_SWAP_RANDOM, 0, or no value means this mon swap triggers at random.
+    u16 swapSpecies;
+    u16 swapLvl;
+    u16 swapMoves[MAX_MON_MOVES];
+    u16 swapAtPlayerLvl; // If the player has a pokemon >= this level, the mon swap triggers. A value of MON_SWAP_RANDOM, 0, or no value means this mon swap triggers at random.
 };
 
 struct TrainerMonCustom // see include/constants/pokemon.h for constants

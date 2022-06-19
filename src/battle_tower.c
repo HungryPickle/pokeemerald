@@ -3001,8 +3001,10 @@ static void FillPartnerParty(u16 trainerId)
         monsCount = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize < 3 ?
             gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].partySize : 3;
         
+        const struct TrainerMonCustom *partyData = gTrainers[trainerId - TRAINER_CUSTOM_PARTNER].party.Custom;
+
         for (i = 0; i < monsCount; i ++)
-            CreateNPCTrainerMonCustomMon(gPlayerParty, trainerId - TRAINER_CUSTOM_PARTNER, i, TRUE);
+            CreateNPCTrainerMonCustomMon(gPlayerParty, partyData, trainerId - TRAINER_CUSTOM_PARTNER, i, TRUE);
 
     }
 #endif
